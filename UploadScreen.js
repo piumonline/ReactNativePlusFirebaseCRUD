@@ -9,6 +9,8 @@ import { useState} from 'react'
 const UploadScreen = () => {
     const [image, setImage] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [transferred, setTransferred] = useState(0);
+
 
     // const pickImage = async()=>{
     //     let result = await ImagePicker.launchImageLibraryAsync({
@@ -34,33 +36,76 @@ const UploadScreen = () => {
           allowsEditing: true,
           aspect: [4, 3],
           quality: 1,
-        });
-    
-        console.log(result);
-    
+        })
+
         if (!result.canceled) {
           setImage(result.assets[0].uri);
-        }
-      };
-      
-    const uploadImage = async()=>{
-        setUploading(true);
-        const response = await fetch(image.uri)
-        const blob = await response.blob();
-        const filename = image.uri.substring(image.uri.lastIndexOf('/')+1);
-        var ref = firebase.storage().ref().child(filename).put(blob);
 
-        try{
-            await ref;
-        }catch(e){
-            console.log(e);
+          //this is the url for image
+        const soure = result.assets[0].uri;
+        console.log(soure);
+
         }
-        setUploading(false);
-        Alert.alert(
-            'photo saved'
-        );
-        setImage(null);
-    }
+        
+      };
+
+    // const uploadImage = async()=>{
+    //     const uploadUri = image;
+    //     let filename = image.uri.substring(uploadUri.lastIndexOf('/')+1);
+        
+    //     setUploading(true);
+    //     setTransferred(0);
+
+    //     try{
+    //         await storage().ref(filename).putFile(uploadUri);
+    //         setUploading(false);
+    //         Alert.alert('photo saved');
+
+    //     }catch(e){
+    //         console.log(e);
+    //     }
+    //     setImage(null);
+    // }
+    const uploadImage = async()=>{
+        if (image) {
+          const uploadUri = image;
+          let filename = uploadUri.substring(uploadUri.lastIndexOf('/')+1);
+          const response = await fetch(uploadUri);
+          const blob = await response.blob();
+          
+          setUploading(true);
+          setTransferred(0);
+      
+          try{
+              await firebase.storage().ref().child(filename).put(blob);
+              setUploading(false);
+              Alert.alert('photo saved');
+      
+          }catch(e){
+              console.log(e);
+          }
+          setImage(null);
+        } else {
+          console.error("The image or image.uri is not defined.");
+        }
+      }
+        // setUploading(true);
+        // const response = await fetch(image.uri)
+        // const blob = await response.blob();
+        // const filename = image.uri.substring(image.uri.lastIndexOf('/')+1);
+        // var ref = firebase.storage().ref().child(filename).put(blob);
+
+        // try{
+        //     await ref;
+        // }catch(e){
+        //     console.log(e);
+        // }
+        // setUploading(false);
+        // Alert.alert(
+        //     'photo saved'
+        // );
+        // setImage(null);
+    
 
   return (
     <SafeAreaView>
